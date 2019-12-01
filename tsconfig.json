@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    // Target latest version of ECMAScript.
+    "target": "es2019",
+
+    // Compile imports to CommonJS format which Node can consume.
+    "module": "commonjs",
+
+    // Search under node_modules for non-relative imports.
+    "moduleResolution": "node",
+
+    // Don't emit .js files by default when running tsc from the command line.
+    "noEmit": true,
+
+    // Skip type checking of declaration files, speeds up compilation.
+    "skipLibCheck": true,
+
+    // Enable strictest settings like strictNullChecks & noImplicitAny.
+    "strict": true,
+    "noImplicitReturns": true,
+
+    // Import non-ES modules as default imports.
+    "esModuleInterop": true,
+
+    // Enable incremental compilation by reading/writing information from prior
+    // compilations to a file on disk.
+    "incremental": true,
+
+    // Allow decorators
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    "resolveJsonModule": true
+  }
+}
