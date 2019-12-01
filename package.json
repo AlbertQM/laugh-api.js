@@ -1,0 +1,38 @@
+{
+  "name": "laugh-api",
+  "version": "1.0.0",
+  "description": "A high-level API to detect laughter from audio-visual data. It uses face-api.js for video features, and a custom model for audio features. Built in TensorFlow.js.",
+  "main": "webpack.config.js",
+  "dependencies": {
+    "face-api.js": "^0.21.0"
+  },
+  "devDependencies": {
+    "webpack-cli": "^3.3.10",
+    "webpack": "^4.41.2",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.7.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlbertQM/laugh-api.js.git"
+  },
+  "keywords": [
+    "laughter",
+    "detection",
+    "laughter",
+    "recognition",
+    "laugh",
+    "tensorflow.js",
+    "face-api.js"
+  ],
+  "author": "Alberto Morabito",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AlbertQM/laugh-api.js/issues"
+  },
+  "homepage": "https://github.com/AlbertQM/laugh-api.js#readme"
+}
