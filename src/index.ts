@@ -1,3 +1,5 @@
+import * as faceapi from "../node_modules/face-api.js";
+
 // Media Element containing the A/V feed
 const video = document.getElementById("video") as HTMLMediaElement;
 const predictionEl = document.getElementById("prediction");
