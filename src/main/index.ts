@@ -1,3 +1,5 @@
+import * as faceapi from "../../node_modules/face-api.js";
+
 const MODELS_PATH = "../../ext/face-api.js/models";
 
 // Media Element containing the A/V feed
@@ -8,9 +10,7 @@ function init() {
   if (video && predictionEl) {
     video.addEventListener("play", () => {
       setInterval(async () => {
-        // @ts-ignore
         const detections = await faceapi
-          // @ts-ignore
           .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
           .withFaceLandmarks()
           .withFaceExpressions();
@@ -40,12 +40,8 @@ function startVideo() {
 }
 
 Promise.all([
-  // @ts-ignore
   faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_PATH),
-  // @ts-ignore
   faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_PATH),
-  // @ts-ignore
   faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_PATH),
-  // @ts-ignore
   faceapi.nets.faceExpressionNet.loadFromUri(MODELS_PATH)
 ]).then(startVideo);
