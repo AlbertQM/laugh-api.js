@@ -3,6 +3,11 @@
     "target": "es2019",
     "module": "commonjs",
     "sourceMap": true,
-    "outDir": "src/static"
+    "outDir": "src/static",
+    // Skip type checking of declaration files, speeds up compilation.
+    "skipLibCheck": true,
+    // Enable strictest settings like strictNullChecks & noImplicitAny.
+    "strict": true,
+    "noImplicitReturns": true
   }
 }
