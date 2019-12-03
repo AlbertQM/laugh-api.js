@@ -9,6 +9,10 @@ module.exports = {
     path: path.resolve(__dirname, "dist")
   },
 
+  devServer: {
+    contentBase: "./dist"
+  },
+
   plugins: [
     // Copy static folder to build folder
     new CopyWebpackPlugin([
