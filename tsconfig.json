@@ -9,9 +9,6 @@
     // Search under node_modules for non-relative imports.
     "moduleResolution": "node",
 
-    // Don't emit .js files by default when running tsc from the command line.
-    "noEmit": true,
-
     // Skip type checking of declaration files, speeds up compilation.
     "skipLibCheck": true,
 

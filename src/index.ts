@@ -1,29 +1,12 @@
 import * as faceapi from "../node_modules/face-api.js";
 
-// Media Element containing the A/V feed
-const video = document.getElementById("video") as HTMLMediaElement;
+const MODELS_PATH = "./models";
+
+// Media Element containing the A/V feed.
+const video = document.getElementById("video") as HTMLVideoElement;
 const predictionEl = document.getElementById("prediction");
 
-function startVideo() {
-  if (!video) {
-    return;
-  }
-
-  navigator.getUserMedia(
-    { video: {} },
-    stream => (video.srcObject = stream),
-    err => console.error(err)
-  );
-}
-
-Promise.all([
-  faceapi.nets.tinyFaceDetector.loadFromUri("../../ext/face-api.js/models"),
-  faceapi.nets.faceLandmark68Net.loadFromUri("../../ext/face-api.js/models"),
-  faceapi.nets.faceRecognitionNet.loadFromUri("../../ext/face-api.js/models"),
-  faceapi.nets.faceExpressionNet.loadFromUri("../../ext/face-api.js/models")
-]).then(startVideo);
-
-document.onload = () => {
+function init() {
   if (video && predictionEl) {
     video.addEventListener("play", () => {
       setInterval(async () => {
@@ -33,10 +16,32 @@ document.onload = () => {
           .withFaceExpressions();
         const { expressions } = detections[0];
         const bestGuess = Object.keys(expressions).reduce((a, b) =>
+          // @ts-ignore
           expressions[a] > expressions[b] ? a : b
         );
         predictionEl.innerHTML = bestGuess;
       }, 100);
     });
   }
-};
+}
+
+function startVideo() {
+  if (!video) {
+    return;
+  }
+
+  init();
+
+  navigator.getUserMedia(
+    { video: {} },
+    stream => (video.srcObject = stream),
+    err => console.error(err)
+  );
+}
+
+Promise.all([
+  faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_PATH),
+  faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_PATH),
+  faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_PATH),
+  faceapi.nets.faceExpressionNet.loadFromUri(MODELS_PATH)
+]).then(startVideo);
