@@ -2,9 +2,10 @@
   "name": "laugh-api",
   "version": "1.0.0",
   "description": "A high-level API to detect laughter from audio-visual data. It uses face-api.js for video features, and a custom model for audio features. Built in TensorFlow.js.",
-  "main": "webpack.config.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,7 @@
     "face-api.js": "^0.21.0"
   },
   "devDependencies": {
+    "copy-webpack-plugin": "^5.0.5",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10"
   }
