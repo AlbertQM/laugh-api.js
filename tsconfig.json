@@ -8,6 +8,8 @@
     "skipLibCheck": true,
     // Enable strictest settings like strictNullChecks & noImplicitAny.
     "strict": true,
-    "noImplicitReturns": true
+    "noImplicitReturns": true,
+    // Search under node_modules for non-relative imports.
+    "moduleResolution": "node"
   }
 }
