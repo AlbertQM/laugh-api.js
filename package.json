@@ -24,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/AlbertQM/laugh-api.js/issues"
   },
-  "homepage": "https://github.com/AlbertQM/laugh-api.js#readme"
+  "homepage": "https://github.com/AlbertQM/laugh-api.js#readme",
+  "dependencies": {
+    "face-api.js": "^0.21.0"
+  }
 }
