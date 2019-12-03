@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const faceapi = require("../../node_modules/face-api.js");
-const MODELS_PATH = "../../ext/face-api.js/models";
+const faceapi = require("face-api.js");
+const MODELS_PATH = "./models";
 // Media Element containing the A/V feed
 const video = document.getElementById("video");
 const predictionEl = document.getElementById("prediction");

@@ -1,6 +1,6 @@
-import * as faceapi from "../../node_modules/face-api.js";
+import * as faceapi from "face-api.js";
 
-const MODELS_PATH = "../../ext/face-api.js/models";
+const MODELS_PATH = "./models";
 
 // Media Element containing the A/V feed
 const video = document.getElementById("video") as HTMLVideoElement;
