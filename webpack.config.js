@@ -9,6 +9,13 @@ module.exports = {
     path: path.resolve(__dirname, "dist")
   },
 
+  // node requires `fs`, the browser doesn't. Adding this block of code
+  // will prevent webpack from showing a warning. More on this link:
+  // https://github.com/justadudewhohacks/face-api.js/issues/154#issuecomment-443420884
+  node: {
+    fs: "empty"
+  },
+
   devServer: {
     contentBase: "./dist"
   },
