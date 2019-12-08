@@ -34,5 +34,20 @@ module.exports = {
         flatten: true
       }
     ])
-  ]
+  ],
+
+  module: {
+    rules: [
+      {
+        test: /\.(ts|js)$/,
+        exclude: /(node_modules)/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ["@babel/preset-env"]
+          }
+        }
+      }
+    ]
+  }
 };
