@@ -1,2 +1,4 @@
 node_modules
 dist
+src/static/*.js
+src/static/*.js.map
