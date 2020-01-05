@@ -32,6 +32,11 @@ module.exports = {
         from: "./ext/face-api.js/models/*",
         to: path.resolve(__dirname, "dist/models"),
         flatten: true
+      },
+      {
+        from: "./src/main/model/*",
+        to: path.resolve(__dirname, "dist/models"),
+        flatten: true
       }
     ])
   ]
