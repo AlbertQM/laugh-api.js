@@ -37,8 +37,15 @@ function getMfcc() {
         tf.tidy(() => {
           const mfccTensor = (tf.tensor(mfcc, [1, 40]) as unknown) as Tensor;
           const prediction = model!.predict(mfccTensor) as Tensor;
-          const [laugh, filler] = prediction.dataSync();
-          pred!.innerHTML = laugh > filler ? "Laugh?" : "No laugh";
+          const [speech, laugh, filler] = prediction.dataSync();
+
+          const max = Math.max(laugh, filler, speech);
+          let label = "";
+          if (max === laugh) label = "laugh";
+          if (max === filler) label = "filler";
+          if (max === speech) label = "speech";
+
+          pred!.innerHTML = label;
         });
       }
     });
