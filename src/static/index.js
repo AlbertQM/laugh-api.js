@@ -26,9 +26,13 @@ function getMfcc() {
             source,
             bufferSize: 512,
             numberOfMFCCCoefficients: 40,
-            featureExtractors: ["mfcc"],
-            callback: ({ mfcc }) => {
+            featureExtractors: ["mfcc", "energy"],
+            callback: ({ mfcc, energy }) => {
                 tf.tidy(() => {
+                    if (energy < 1) {
+                        pred.innerHTML = "in silence";
+                        return;
+                    }
                     const mfccTensor = tf.tensor(mfcc, [1, 40]);
                     const prediction = model.predict(mfccTensor);
                     const [speech, laugh, filler] = prediction.dataSync();
