@@ -46,7 +46,7 @@ function init() {
           energy: number;
         }) => {
           faceapi.tf.tidy(() => {
-            let label = "in silence";
+            let label = "Listening...";
             const isTalking = energy > 0.5;
             if (!isTalking) {
               predictionEl!.innerHTML = label;
@@ -79,9 +79,9 @@ function init() {
                 const isLaughingAudio = max === laugh;
                 const isLaughingVideo = bestGuess === "happy";
                 if (isLaughingAudio && isLaughingVideo) {
-                  predictionEl!.innerHTML = "laughing";
+                  predictionEl!.innerHTML = "You laughed!";
                 } else {
-                  predictionEl!.innerHTML = "talking";
+                  predictionEl!.innerHTML = "Listening...";
                 }
               });
           });
