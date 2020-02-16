@@ -25,8 +25,26 @@ function init() {
         source,
         bufferSize: 512,
         numberOfMFCCCoefficients: 40,
-        featureExtractors: ["mfcc", "energy"],
-        callback: ({ mfcc, energy }: { mfcc: number[]; energy: number }) => {
+        featureExtractors: [
+          "mfcc",
+          "energy",
+          "zcr",
+          "spectralCentroid",
+          "spectralFlatness"
+        ],
+        callback: ({
+          mfcc,
+          energy,
+          zcr,
+          spectralFlatness,
+          spectralCentroid
+        }: {
+          zcr: number[];
+          spectralCentroid: number[];
+          spectralFlatness: number[];
+          mfcc: number[];
+          energy: number;
+        }) => {
           faceapi.tf.tidy(() => {
             let label = "in silence";
             const isTalking = energy > 0.5;
@@ -48,7 +66,11 @@ function init() {
                   // @ts-ignore
                   expressions[a] > expressions[b] ? a : b
                 ) as keyof faceapi.FaceExpressions;
-                const mfccTensor = faceapi.tf.tensor(mfcc, [1, 40]);
+                const features = mfcc
+                  .concat(zcr)
+                  .concat(spectralFlatness)
+                  .concat(spectralCentroid);
+                const mfccTensor = faceapi.tf.tensor(features, [1, 43]);
                 const prediction = model!.predict(
                   mfccTensor
                 ) as faceapi.tf.Tensor;
