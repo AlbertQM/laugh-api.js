@@ -61,11 +61,9 @@ function init() {
                 if (!detections[0]) {
                   return;
                 }
-                const { expressions } = detections[0];
-                const bestGuess = Object.keys(expressions).reduce((a, b) =>
-                  // @ts-ignore
-                  expressions[a] > expressions[b] ? a : b
-                ) as keyof faceapi.FaceExpressions;
+                const {
+                  expressions: { happy }
+                } = detections[0];
                 const features = mfcc
                   .concat(zcr)
                   .concat(spectralFlatness)
@@ -77,7 +75,7 @@ function init() {
                 const [laugh, filler] = prediction.dataSync();
                 const max = Math.max(laugh, filler);
                 const isLaughingAudio = max === laugh;
-                const isLaughingVideo = bestGuess === "happy";
+                const isLaughingVideo = happy === 1;
                 if (isLaughingAudio && isLaughingVideo) {
                   predictionEl!.innerHTML = "You laughed!";
                 } else {
