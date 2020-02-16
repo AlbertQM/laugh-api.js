@@ -4,6 +4,8 @@ import * as Meyda from "meyda";
 import { LayersModel, loadLayersModel } from "@tensorflow/tfjs";
 
 const MODELS_PATH = "./models";
+// How long should the "You laughed!" caption stay on screen after a detection.
+const DETECTION_CAPTION_SCREEN_TIME_MS = 1000;
 
 // Media Element containing the A/V feed
 const video = document.getElementById("video") as HTMLVideoElement;
@@ -46,10 +48,8 @@ function init() {
           energy: number;
         }) => {
           faceapi.tf.tidy(() => {
-            let label = "Listening...";
             const isTalking = energy > 0.5;
             if (!isTalking) {
-              predictionEl!.innerHTML = label;
               return;
             }
             // If we detect voice activity, use the model to make predictions
@@ -78,8 +78,9 @@ function init() {
                 const isLaughingVideo = happy === 1;
                 if (isLaughingAudio && isLaughingVideo) {
                   predictionEl!.innerHTML = "You laughed!";
-                } else {
-                  predictionEl!.innerHTML = "Listening...";
+                  setTimeout(() => {
+                    predictionEl!.innerHTML = "";
+                  }, DETECTION_CAPTION_SCREEN_TIME_MS);
                 }
               });
           });
