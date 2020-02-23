@@ -17,6 +17,8 @@ let source: MediaStreamAudioSourceNode | null = null;
 type Model = LayersModel;
 let model: Model | null = null;
 
+const tinyFaceDetector = new faceapi.TinyFaceDetectorOptions();
+
 function init() {
   const isAudioReady = !!audioContext && typeof Meyda !== "undefined";
   const isVideoReady = !!video;
@@ -54,7 +56,7 @@ function init() {
             }
             // If we detect voice activity, use the model to make predictions
             faceapi
-              .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+              .detectAllFaces(video, tinyFaceDetector)
               .withFaceLandmarks()
               .withFaceExpressions()
               .then((detections): any => {
