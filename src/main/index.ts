@@ -27,7 +27,7 @@ function init() {
       const analyzer = Meyda.createMeydaAnalyzer({
         audioContext: audioContext,
         source,
-        bufferSize: 512,
+        bufferSize: 4096,
         numberOfMFCCCoefficients: 40,
         featureExtractors: [
           "mfcc",
