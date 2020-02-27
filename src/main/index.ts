@@ -57,10 +57,6 @@ function init() {
           energy: number;
         }) => {
           faceapi.tf.tidy(() => {
-            const isTalking = energy > 0.5;
-            if (!isTalking) {
-              return;
-            }
             // If we detect voice activity, use the model to make predictions
             faceapi
               .detectAllFaces(video, tinyFaceDetector)
@@ -84,12 +80,23 @@ function init() {
                 const [laugh, filler] = prediction.dataSync();
                 const max = Math.max(laugh, filler);
                 const isLaughingAudio = max === laugh;
-                const isLaughingVideo = happy > 0.8;
+                const isLaughingVideo = happy === 1;
 
                 // Update the progress bars on screen based on how confident
                 // the models are
                 audioConfidenceEl!.value = Number(laugh.toFixed(3)) * 100;
                 videoConfidenceEl!.value = Number(happy.toFixed(3)) * 100;
+
+                // If we are not detecting sound, there is no chance of
+                // laugh. This check could be done before the prediction to
+                // save computation. However, we want to show the "video confidence"
+                // update in real-time. This might change in the future.
+                // TODO: Move this check as early as possible to save computation
+                // once we don't need to show the video confidence on screen anymore.
+                const isTalking = energy > 0.5;
+                if (!isTalking) {
+                  return;
+                }
 
                 if (isLaughingAudio && isLaughingVideo) {
                   predictionEl!.innerHTML = "You laughed!";
