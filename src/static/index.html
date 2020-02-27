@@ -16,15 +16,57 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
+        background-color: #1a1a1a;
+        color: #9ceaef;
       }
 
       canvas {
         position: absolute;
       }
+
+      #video {
+        border: 1px solid #9ceaef;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .videoContainer {
+        margin-right: 1rem;
+      }
+
+      .results {
+        display: flex;
+        justify-content: space-evenly;
+      }
+
+      #prediction {
+        margin: 2rem auto;
+        min-height: 2rem;
+      }
     </style>
   </head>
   <body>
-    <h1>Hmm... <span id="prediction"></span></h1>
-    <video id="video" width="720" height="560" autoplay muted></video>
+    <h1>Multimodal Laughter Detection</h1>
+    <div class="container">
+      <div class="videoContainer">
+        <video id="video" width="720" height="560" autoplay muted></video>
+      </div>
+      <div>
+        <div class="results">
+          <div>
+            Audio:
+            <progress id="confidenceAudio" max="100" value="0"></progress>
+          </div>
+          <div>
+            Video:
+            <progress id="confidenceVideo" max="100" value="0"></progress>
+          </div>
+        </div>
+      </div>
+      <h3 id="prediction"></h3>
+    </div>
   </body>
 </html>
