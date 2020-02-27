@@ -10,6 +10,13 @@ const DETECTION_CAPTION_SCREEN_TIME_MS = 1000;
 // Media Element containing the A/V feed
 const video = document.getElementById("video") as HTMLVideoElement;
 const predictionEl = document.getElementById("prediction");
+const audioConfidenceEl = document.getElementById(
+  "confidenceAudio"
+) as HTMLProgressElement;
+const videoConfidenceEl = document.getElementById(
+  "confidenceVideo"
+) as HTMLProgressElement;
+
 // Audio setup
 const audioContext = new AudioContext();
 let source: MediaStreamAudioSourceNode | null = null;
@@ -77,11 +84,21 @@ function init() {
                 const [laugh, filler] = prediction.dataSync();
                 const max = Math.max(laugh, filler);
                 const isLaughingAudio = max === laugh;
-                const isLaughingVideo = happy === 1;
+                const isLaughingVideo = happy > 0.8;
+
+                // Update the progress bars on screen based on how confident
+                // the models are
+                audioConfidenceEl!.value = Number(laugh.toFixed(3)) * 100;
+                videoConfidenceEl!.value = Number(happy.toFixed(3)) * 100;
+
                 if (isLaughingAudio && isLaughingVideo) {
                   predictionEl!.innerHTML = "You laughed!";
+                  // Persist the results in the UI for a few seconds, then
+                  // clear it.
                   setTimeout(() => {
                     predictionEl!.innerHTML = "";
+                    audioConfidenceEl!.value = 0;
+                    videoConfidenceEl!.value = 0;
                   }, DETECTION_CAPTION_SCREEN_TIME_MS);
                 }
               });
