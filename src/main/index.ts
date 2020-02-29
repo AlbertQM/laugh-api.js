@@ -16,6 +16,9 @@ const audioConfidenceEl = document.getElementById(
 const videoConfidenceEl = document.getElementById(
   "confidenceVideo"
 ) as HTMLProgressElement;
+const initialMessage = document.getElementById(
+  "initialMessage"
+) as HTMLHeadingElement;
 
 // Audio setup
 const audioContext = new AudioContext();
@@ -27,8 +30,10 @@ let model: Model | null = null;
 const tinyFaceDetector = new faceapi.TinyFaceDetectorOptions();
 
 function init() {
-  const isAudioReady = !!audioContext && typeof Meyda !== "undefined";
+  const isAudioReady =
+    audioContext.state === "running" && typeof Meyda !== "undefined";
   const isVideoReady = !!video;
+
   if (isAudioReady && isVideoReady) {
     video.addEventListener("play", () => {
       const analyzer = Meyda.createMeydaAnalyzer({
@@ -87,6 +92,9 @@ function init() {
                 audioConfidenceEl!.value = Number(laugh.toFixed(3)) * 100;
                 videoConfidenceEl!.value = Number(happy.toFixed(3)) * 100;
 
+                // Remove the "Loading.." message as we're ready to show predictions
+                initialMessage.remove();
+
                 // If we are not detecting sound, there is no chance of
                 // laugh. This check could be done before the prediction to
                 // save computation. However, we want to show the "video confidence"
@@ -118,22 +126,14 @@ function init() {
 }
 
 function startAV() {
-  // Chrome 70 or above requires users gestures to enable WebAudio API.
-  // We need to resume the audio context after users made an action.
-  window.addEventListener("pointerdown", () => {
-    if (audioContext.state !== "running") {
-      audioContext.resume();
-    }
-  });
-
-  const isAVReady = video && audioContext;
+  const isAVReady = video && audioContext.state === "running";
   if (!isAVReady) {
     return;
   }
 
   // Init both models
-  init();
   loadAudioModel();
+  init();
 
   navigator.getUserMedia(
     { video: {}, audio: {} },
@@ -145,13 +145,21 @@ function startAV() {
   );
 }
 
-Promise.all([
-  faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_PATH),
-  faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_PATH),
-  faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_PATH),
-  faceapi.nets.faceExpressionNet.loadFromUri(MODELS_PATH)
-]).then(startAV);
-
 const loadAudioModel = async () => {
   model = await loadLayersModel("./models/model.json");
 };
+
+// Chrome 70 or above requires users gestures to enable WebAudio API.
+// We need to resume the audio context after users made an action.
+window.addEventListener("pointerdown", () => {
+  if (audioContext.state !== "running") {
+    audioContext.resume();
+    initialMessage.innerHTML = "Loading models..";
+    Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_PATH),
+      faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_PATH),
+      faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_PATH),
+      faceapi.nets.faceExpressionNet.loadFromUri(MODELS_PATH)
+    ]).then(startAV);
+  }
+});
