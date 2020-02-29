@@ -169,7 +169,7 @@ const loadAudioModel = async () => {
 
 // Chrome 70 or above requires users gestures to enable WebAudio API.
 // We need to resume the audio context after users made an action.
-window.addEventListener("touchstart", () => {
+window.addEventListener("pointerdown", () => {
   if (audioContext.state !== "running") {
     audioContext.resume();
   }
