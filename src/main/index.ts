@@ -172,12 +172,12 @@ const loadAudioModel = async () => {
 window.addEventListener("pointerdown", () => {
   if (audioContext.state !== "running") {
     audioContext.resume();
-    initialMessage.innerHTML = "Loading models..";
-    Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_PATH),
-      faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_PATH),
-      faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_PATH),
-      faceapi.nets.faceExpressionNet.loadFromUri(MODELS_PATH)
-    ]).then(startAV);
   }
+  initialMessage.innerHTML = "Loading models..";
+  Promise.all([
+    faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_PATH),
+    faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_PATH),
+    faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_PATH),
+    faceapi.nets.faceExpressionNet.loadFromUri(MODELS_PATH)
+  ]).then(startAV);
 });
