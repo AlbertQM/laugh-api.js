@@ -29,6 +29,81 @@ let model: Model | null = null;
 
 const tinyFaceDetector = new faceapi.TinyFaceDetectorOptions();
 
+// Features extracted with Meyda and fed to the model
+type AudioFeatures = {
+  zcr: number[];
+  spectralCentroid: number[];
+  spectralFlatness: number[];
+  mfcc: number[];
+  energy: number;
+};
+/** Takes AudioFeatures as input and predicts laughter using both
+ *  saudio and video model.
+ */
+function makePrediction({
+  mfcc,
+  energy,
+  zcr,
+  spectralFlatness,
+  spectralCentroid
+}: AudioFeatures) {
+  faceapi.tf.tidy(() => {
+    // If we detect voice activity, use the model to make predictions
+    faceapi
+      .detectAllFaces(video, tinyFaceDetector)
+      .withFaceLandmarks()
+      .withFaceExpressions()
+      .then((detections): any => {
+        if (!detections[0]) {
+          return;
+        }
+        const {
+          expressions: { happy }
+        } = detections[0];
+        const features = mfcc
+          .concat(zcr)
+          .concat(spectralFlatness)
+          .concat(spectralCentroid);
+        const mfccTensor = faceapi.tf.tensor(features, [1, 43]);
+        const prediction = model!.predict(mfccTensor) as faceapi.tf.Tensor;
+        const [laugh, filler] = prediction.dataSync();
+        const max = Math.max(laugh, filler);
+        const isLaughingAudio = max === laugh;
+        const isLaughingVideo = happy === 1;
+
+        // Update the progress bars on screen based on how confident
+        // the models are
+        audioConfidenceEl!.value = Number(laugh.toFixed(3)) * 100;
+        videoConfidenceEl!.value = Number(happy.toFixed(3)) * 100;
+
+        // Remove the "Loading.." message as we're ready to show predictions
+        initialMessage.remove();
+
+        // If we are not detecting sound, there is no chance of
+        // laugh. This check could be done before the prediction to
+        // save computation. However, we want to show the "video confidence"
+        // update in real-time. This might change in the future.
+        // TODO: Move this check as early as possible to save computation
+        // once we don't need to show the video confidence on screen anymore.
+        const isTalking = energy > 0.5;
+        if (!isTalking) {
+          return;
+        }
+
+        if (isLaughingAudio && isLaughingVideo) {
+          predictionEl!.innerHTML = "You laughed!";
+          // Persist the results in the UI for a few seconds, then
+          // clear it.
+          setTimeout(() => {
+            predictionEl!.innerHTML = "";
+            audioConfidenceEl!.value = 0;
+            videoConfidenceEl!.value = 0;
+          }, DETECTION_CAPTION_SCREEN_TIME_MS);
+        }
+      });
+  });
+}
+
 function init() {
   const isAudioReady =
     audioContext.state === "running" && typeof Meyda !== "undefined";
@@ -54,71 +129,14 @@ function init() {
           zcr,
           spectralFlatness,
           spectralCentroid
-        }: {
-          zcr: number[];
-          spectralCentroid: number[];
-          spectralFlatness: number[];
-          mfcc: number[];
-          energy: number;
-        }) => {
-          faceapi.tf.tidy(() => {
-            // If we detect voice activity, use the model to make predictions
-            faceapi
-              .detectAllFaces(video, tinyFaceDetector)
-              .withFaceLandmarks()
-              .withFaceExpressions()
-              .then((detections): any => {
-                if (!detections[0]) {
-                  return;
-                }
-                const {
-                  expressions: { happy }
-                } = detections[0];
-                const features = mfcc
-                  .concat(zcr)
-                  .concat(spectralFlatness)
-                  .concat(spectralCentroid);
-                const mfccTensor = faceapi.tf.tensor(features, [1, 43]);
-                const prediction = model!.predict(
-                  mfccTensor
-                ) as faceapi.tf.Tensor;
-                const [laugh, filler] = prediction.dataSync();
-                const max = Math.max(laugh, filler);
-                const isLaughingAudio = max === laugh;
-                const isLaughingVideo = happy === 1;
-
-                // Update the progress bars on screen based on how confident
-                // the models are
-                audioConfidenceEl!.value = Number(laugh.toFixed(3)) * 100;
-                videoConfidenceEl!.value = Number(happy.toFixed(3)) * 100;
-
-                // Remove the "Loading.." message as we're ready to show predictions
-                initialMessage.remove();
-
-                // If we are not detecting sound, there is no chance of
-                // laugh. This check could be done before the prediction to
-                // save computation. However, we want to show the "video confidence"
-                // update in real-time. This might change in the future.
-                // TODO: Move this check as early as possible to save computation
-                // once we don't need to show the video confidence on screen anymore.
-                const isTalking = energy > 0.5;
-                if (!isTalking) {
-                  return;
-                }
-
-                if (isLaughingAudio && isLaughingVideo) {
-                  predictionEl!.innerHTML = "You laughed!";
-                  // Persist the results in the UI for a few seconds, then
-                  // clear it.
-                  setTimeout(() => {
-                    predictionEl!.innerHTML = "";
-                    audioConfidenceEl!.value = 0;
-                    videoConfidenceEl!.value = 0;
-                  }, DETECTION_CAPTION_SCREEN_TIME_MS);
-                }
-              });
-          });
-        }
+        }: AudioFeatures) =>
+          makePrediction({
+            mfcc,
+            energy,
+            zcr,
+            spectralFlatness,
+            spectralCentroid
+          })
       });
       analyzer.start();
     });
