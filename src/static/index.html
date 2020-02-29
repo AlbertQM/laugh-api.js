@@ -10,8 +10,6 @@
       body {
         margin: 0;
         padding: 0;
-        width: 100vw;
-        height: 100vh;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -20,12 +18,9 @@
         color: #9ceaef;
       }
 
-      canvas {
-        position: absolute;
-      }
-
       #video {
         border: 1px solid #9ceaef;
+        width: 100%;
       }
 
       .container {
@@ -34,36 +29,44 @@
       }
 
       .videoContainer {
-        margin-right: 1rem;
+        align-self: center;
+        width: 75vw;
       }
 
       .results {
         display: flex;
-        justify-content: space-evenly;
+        text-align: center;
       }
 
       #prediction {
         margin: 2rem auto;
         min-height: 2rem;
       }
+
+      #title {
+        align-self: center;
+      }
+
+      #initialMessage {
+        align-self: center;
+      }
     </style>
   </head>
   <body>
-    <h1>Multimodal Laughter Detection</h1>
     <div class="container">
+      <h2 id="title">Multimodal Laughter Detection</h2>
+      <h3 id="initialMessage">Click anywhere to start</h3>
       <div class="videoContainer">
-        <video id="video" width="720" height="560" autoplay muted></video>
+        <video id="video" autoplay muted></video>
       </div>
-      <div>
-        <div class="results">
-          <div>
-            Audio:
-            <progress id="confidenceAudio" max="100" value="0"></progress>
-          </div>
-          <div>
-            Video:
-            <progress id="confidenceVideo" max="100" value="0"></progress>
-          </div>
+      <div class="results">
+        <div>
+          Audio:
+          <progress id="confidenceAudio" max="100" value="0"></progress>
+        </div>
+        <div>
+          Video:
+          <progress id="confidenceVideo" max="100" value="0"></progress>
         </div>
       </div>
       <h3 id="prediction"></h3>
