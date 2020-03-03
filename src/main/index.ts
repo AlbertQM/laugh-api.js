@@ -51,7 +51,6 @@ function makePrediction({
     // If we detect voice activity, use the model to make predictions
     faceapi
       .detectAllFaces(video, tinyFaceDetector)
-      .withFaceLandmarks()
       .withFaceExpressions()
       .then((detections): any => {
         if (!detections[0]) {
