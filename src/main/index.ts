@@ -38,7 +38,7 @@ type AudioFeatures = {
   energy: number;
 };
 /** Takes AudioFeatures as input and predicts laughter using both
- *  saudio and video model.
+ *  audio and video model.
  */
 function makePrediction({
   mfcc,
@@ -48,7 +48,6 @@ function makePrediction({
   spectralCentroid
 }: AudioFeatures) {
   faceapi.tf.tidy(() => {
-    // If we detect voice activity, use the model to make predictions
     faceapi
       .detectAllFaces(video, tinyFaceDetector)
       .withFaceExpressions()
