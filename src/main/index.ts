@@ -64,10 +64,10 @@ function makePrediction({
           .concat(spectralCentroid);
         const mfccTensor = faceapi.tf.tensor(features, [1, 43]);
         const prediction = model!.predict(mfccTensor) as faceapi.tf.Tensor;
-        const [laugh, filler] = prediction.dataSync();
         const max = Math.max(laugh, filler);
         const isLaughingAudio = max === laugh;
         const isLaughingVideo = happy === 1;
+        const [laugh, speech, silence] = prediction.dataSync();
 
         // Update the progress bars on screen based on how confident
         // the models are
