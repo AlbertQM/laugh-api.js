@@ -101,7 +101,7 @@ function makePrediction({
   });
 }
 
-function init() {
+function startPredicting() {
   const isAudioReady =
     audioContext.state === "running" &&
     typeof Meyda !== "undefined" &&
@@ -142,15 +142,34 @@ function init() {
   }
 }
 
+function handleBeginInteraction() {
+  if (audioContext.state !== "running") {
+    audioContext.resume();
+  }
+  initialMessage.innerHTML = "Loading models..";
+  Promise.all([
+    faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_PATH),
+    faceapi.nets.faceExpressionNet.loadFromUri(MODELS_PATH)
+  ]).then(startAV);
+}
+// Chrome 70 or above requires users gestures to enable WebAudio API.
+// We need to resume the audio context after users made an action.
+window.addEventListener("pointerdown", handleBeginInteraction);
+
+const loadAudioModel = async () => {
+  model = await loadLayersModel("./models/model.json");
+};
+
 function startAV() {
+  window.removeEventListener("pointerdown", handleBeginInteraction);
+
   const isAVReady = video && audioContext.state === "running";
   if (!isAVReady) {
     return;
   }
-
-  // Init both models
   loadAudioModel();
-  init();
+
+  startPredicting();
 
   navigator.getUserMedia(
     { video: {}, audio: {} },
@@ -161,20 +180,3 @@ function startAV() {
     err => console.error(err)
   );
 }
-
-const loadAudioModel = async () => {
-  model = await loadLayersModel("./models/model.json");
-};
-
-// Chrome 70 or above requires users gestures to enable WebAudio API.
-// We need to resume the audio context after users made an action.
-window.addEventListener("pointerdown", () => {
-  if (audioContext.state !== "running") {
-    audioContext.resume();
-  }
-  initialMessage.innerHTML = "Loading models..";
-  Promise.all([
-    faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_PATH),
-    faceapi.nets.faceExpressionNet.loadFromUri(MODELS_PATH)
-  ]).then(startAV);
-});
