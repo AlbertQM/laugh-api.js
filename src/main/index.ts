@@ -104,7 +104,9 @@ function makePrediction({
 
 function init() {
   const isAudioReady =
-    audioContext.state === "running" && typeof Meyda !== "undefined";
+    audioContext.state === "running" &&
+    typeof Meyda !== "undefined" &&
+    !!source;
   const isVideoReady = !!video;
 
   if (isAudioReady && isVideoReady) {
