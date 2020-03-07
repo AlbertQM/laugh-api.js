@@ -1,4 +1,4 @@
-# Laugh-Api.js
+# LOLd.js - Multimodal Lightweight Online Laughter Detection
 
 ```
 * * * * * * * * * * * * * * * * * * * * * * * * *
