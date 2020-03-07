@@ -81,11 +81,9 @@
   </head>
   <body>
     <div class="topnav">
-      <a id="webcamLink" href="index.html" class="active"
-        >Live Webcam Detection</a
-      >
+      <a id="webcamLink" href="index.html">Live Webcam Detection</a>
       <a id="videoLink" href="video.html">Offline Video Detection</a>
-      <a id="mobileLink" href="mobile.html">Mobile version</a>
+      <a id="mobileLink" href="mobile.html" class="active">Mobile version</a>
     </div>
     <div class="container">
       <h2 id="title">Multimodal Laughter Detection</h2>
@@ -94,11 +92,11 @@
         <video id="video" autoplay muted></video>
       </div>
       <div class="results">
-        <div>
+        <div hidden>
           Audio:
           <progress id="confidenceAudio" max="100" value="0"></progress>
         </div>
-        <div>
+        <div hidden>
           Video:
           <progress id="confidenceVideo" max="100" value="0"></progress>
         </div>

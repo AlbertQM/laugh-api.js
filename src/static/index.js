@@ -7,6 +7,7 @@ const tfjs_1 = require("@tensorflow/tfjs");
 const MODELS_PATH = "./models";
 // How long should the "You laughed!" caption stay on screen after a detection.
 const DETECTION_CAPTION_SCREEN_TIME_MS = 1000;
+const isMobileVersion = window.location.pathname === "/mobile.html";
 // Media Element containing the A/V feed
 const videoEl = document.getElementById("video");
 const predictionEl = document.getElementById("prediction");
@@ -24,6 +25,9 @@ const tinyFaceDetector = new faceapi.TinyFaceDetectorOptions();
  */
 function makePrediction({ mfcc, energy, zcr, spectralFlatness, spectralCentroid }) {
     faceapi.tf.tidy(() => {
+        if (isMobileVersion && energy < 0.5) {
+            return;
+        }
         faceapi
             .detectAllFaces(videoEl, tinyFaceDetector)
             .withFaceExpressions()
