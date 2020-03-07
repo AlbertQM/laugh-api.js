@@ -51,9 +51,42 @@
       #initialMessage {
         align-self: center;
       }
+
+      .topnav {
+        display: flex;
+        background-color: #1a1a1a;
+        overflow: hidden;
+        width: 100%;
+      }
+
+      .topnav a {
+        float: left;
+        color: #f2f2f2;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+        font-size: 17px;
+      }
+
+      .topnav a:hover {
+        background-color: #9ceaef;
+        color: black;
+      }
+
+      .topnav a.active {
+        background-color: #1f7a8c;
+        color: white;
+      }
     </style>
   </head>
   <body>
+    <div class="topnav">
+      <a id="webcamLink" href="index.html" class="active"
+        >Live Webcam Detection</a
+      >
+      <a id="videoLink" href="video.html">Offline Video Detection</a>
+      <a id="mobileLink" href="mobile.html">Mobile version</a>
+    </div>
     <div class="container">
       <h2 id="title">Multimodal Laughter Detection</h2>
       <h3 id="initialMessage">Click anywhere to start</h3>
