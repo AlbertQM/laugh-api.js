@@ -7,7 +7,9 @@ const tfjs_1 = require("@tensorflow/tfjs");
 const MODELS_PATH = "./models";
 // How long should the "You laughed!" caption stay on screen after a detection.
 const DETECTION_CAPTION_SCREEN_TIME_MS = 1000;
-const isMobileVersion = window.location.pathname === "/mobile.html";
+const pageName = window.location.pathname.split("/").pop();
+const isOfflineVideoVersion = pageName === "video.html";
+const isMobileVersion = pageName === "mobile.html";
 // Media Element containing the A/V feed
 const videoEl = document.getElementById("video");
 const predictionEl = document.getElementById("prediction");
@@ -123,7 +125,6 @@ const loadAudioModel = async () => {
 };
 function startAV() {
     window.removeEventListener("pointerdown", handleBeginInteraction);
-    const isOfflineVideo = window.location.pathname === "/video.html";
     const isAVReady = videoEl && audioContext.state === "running";
     if (!isAVReady) {
         return;
@@ -131,10 +132,10 @@ function startAV() {
     loadAudioModel();
     startPredicting();
     navigator.getUserMedia({ video: {}, audio: {} }, stream => {
-        if (!isOfflineVideo) {
+        if (!isOfflineVideoVersion) {
             videoEl.srcObject = stream;
         }
-        source = !isOfflineVideo
+        source = !isOfflineVideoVersion
             ? audioContext.createMediaStreamSource(stream)
             : audioContext.createMediaElementSource(videoEl);
     }, err => console.error(err));
