@@ -8,7 +8,7 @@ const MODELS_PATH = "./models";
 const DETECTION_CAPTION_SCREEN_TIME_MS = 1000;
 
 // Media Element containing the A/V feed
-const video = document.getElementById("video") as HTMLVideoElement;
+const videoEl = document.getElementById("video") as HTMLVideoElement;
 const predictionEl = document.getElementById("prediction");
 const audioConfidenceEl = document.getElementById(
   "confidenceAudio"
@@ -22,7 +22,11 @@ const initialMessage = document.getElementById(
 
 // Audio setup
 const audioContext = new AudioContext();
-let source: MediaStreamAudioSourceNode | null = null;
+let source: // When using audio from live webcam feed
+| MediaStreamAudioSourceNode
+  // When using audio from offline video
+  | MediaElementAudioSourceNode
+  | null = null;
 // Laugh-audio model
 type Model = LayersModel;
 let model: Model | null = null;
@@ -49,7 +53,7 @@ function makePrediction({
 }: AudioFeatures) {
   faceapi.tf.tidy(() => {
     faceapi
-      .detectAllFaces(video, tinyFaceDetector)
+      .detectAllFaces(videoEl, tinyFaceDetector)
       .withFaceExpressions()
       .then((detections): any => {
         if (!detections[0]) {
@@ -104,39 +108,42 @@ function makePrediction({
 function startPredicting() {
   const isAudioReady =
     audioContext.state === "running" && typeof Meyda !== "undefined";
-  const isVideoReady = !!video;
+  const isVideoReady = !!videoEl;
 
-  if (isAudioReady && isVideoReady) {
-    video.addEventListener("play", () => {
-      const analyzer = Meyda.createMeydaAnalyzer({
-        audioContext: audioContext,
-        source,
-        bufferSize: 4096,
-        numberOfMFCCCoefficients: 40,
-        featureExtractors: [
-          "mfcc",
-          "energy",
-          "zcr",
-          "spectralCentroid",
-          "spectralFlatness"
-        ],
-        callback: ({
+  const computePreduction = () => {
+    const analyzer = Meyda.createMeydaAnalyzer({
+      audioContext: audioContext,
+      source,
+      bufferSize: 4096,
+      numberOfMFCCCoefficients: 40,
+      featureExtractors: [
+        "mfcc",
+        "energy",
+        "zcr",
+        "spectralCentroid",
+        "spectralFlatness"
+      ],
+      callback: ({
+        mfcc,
+        energy,
+        zcr,
+        spectralFlatness,
+        spectralCentroid
+      }: AudioFeatures) =>
+        makePrediction({
           mfcc,
           energy,
           zcr,
           spectralFlatness,
           spectralCentroid
-        }: AudioFeatures) =>
-          makePrediction({
-            mfcc,
-            energy,
-            zcr,
-            spectralFlatness,
-            spectralCentroid
-          })
-      });
-      analyzer.start();
+        })
     });
+    analyzer.start();
+    videoEl.removeEventListener("play", computePreduction);
+  };
+
+  if (isAudioReady && isVideoReady) {
+    videoEl.addEventListener("play", computePreduction);
   }
 }
 
@@ -160,8 +167,9 @@ const loadAudioModel = async () => {
 
 function startAV() {
   window.removeEventListener("pointerdown", handleBeginInteraction);
+  const isOfflineVideo = window.location.pathname === "/video.html";
 
-  const isAVReady = video && audioContext.state === "running";
+  const isAVReady = videoEl && audioContext.state === "running";
   if (!isAVReady) {
     return;
   }
@@ -172,8 +180,12 @@ function startAV() {
   navigator.getUserMedia(
     { video: {}, audio: {} },
     stream => {
-      video.srcObject = stream;
-      source = audioContext.createMediaStreamSource(stream);
+      if (!isOfflineVideo) {
+        videoEl.srcObject = stream;
+      }
+      source = !isOfflineVideo
+        ? audioContext.createMediaStreamSource(stream)
+        : audioContext.createMediaElementSource(videoEl);
     },
     err => console.error(err)
   );

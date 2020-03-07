@@ -29,6 +29,11 @@ module.exports = {
         flatten: true
       },
       {
+        from: "./src/static/**/*.mp4",
+        to: path.resolve(__dirname, "dist/videos"),
+        flatten: true
+      },
+      {
         from: "./ext/face-api.js/models/*",
         to: path.resolve(__dirname, "dist/models"),
         flatten: true
