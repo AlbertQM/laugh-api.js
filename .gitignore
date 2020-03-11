@@ -8,3 +8,4 @@ src/static/*.js.map
 # Ignore all ts files but index.ts
 src/main/*
 !src/main/index.ts
+!src/main/Lold.ts
