@@ -1,3 +1,9 @@
+/**
+ * @fileOverview Lold.js - multmodal Lightweight Online Laughter Detection
+ * @author Alberto Morabito
+ * @version 1.0.1
+ */
+
 import * as faceapi from "face-api.js";
 // @ts-ignore as `Meyda` doesn't have type defs
 import * as Meyda from "meyda";
@@ -19,6 +25,27 @@ type AudioFeatures = {
   energy: number;
 };
 
+/**
+ * @class Main Lold API
+ * @classdesc
+ * This class provides an interface to
+ * 1. A ML model that detects laughter via sound signal; this
+ *    model was developed as part of this project.
+ * 2. face-api.js model that detects happiness via video signal.
+ *
+ * These models are used singularly or in conjunction to detect laughter.
+ *
+ * @constructor
+ * @param videoSource Source of the video signal. Usually an HTMLVideoElement
+ * @param audioStream A stream of media content. E.g. audio stream from webcam
+ *
+ * @public `loadModels` - Loads weights and models needed to give predictions
+ * @public `startMultimodalPrediction` - Start the Meyda analyser
+ * @public `stopMultimodalPrediction` - Stop the Meyda analyser
+ * @public `getMultimodalPrediction` - Call both audio and video model for a
+ * prediction and return their confidence value
+ *
+ */
 export default class Lold {
   /** Meyda analyser. Used to extract audio features */
   private analyser: any;
@@ -32,6 +59,8 @@ export default class Lold {
   private predictions: Array<number | undefined> = [];
 
   constructor(videoSource: faceapi.TNetInput, audioStream: MediaStream) {
+    // Important that we create the media stream source here, to make sure
+    // that it refers to the right audioContext box
     this.source = this.audioContext.createMediaStreamSource(audioStream);
 
     this.analyser = Meyda.createMeydaAnalyzer({
@@ -76,6 +105,7 @@ export default class Lold {
   /** Load models and weights */
   public loadModels = async () => {
     this.audioModel = await loadLayersModel(`${MODELS_PATH}/model.json`);
+    // Load face-api.js models
     Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_PATH),
       faceapi.nets.faceExpressionNet.loadFromUri(MODELS_PATH)
@@ -102,9 +132,14 @@ export default class Lold {
 
 /** Return laughter prediction/confidence using both
  *  audio and video (face-api.js) model.
+ *
+ * @param videoSource Source of the video signal. Usually an HTMLVideoElement
+ * @param videoModelOptions Select which model face-api.js should use. Using TinyFaceDetector
+ * as it's the most lightweight.
+ * @param audioModel The audio model developer as part of Lold.js
+ * @param AudioFeatures The features extracted with Meyda to feed to the audio model
  */
 async function makeMultimodalPrediction(
-  /** Source of the video signal. Usually an HTMLVideoElement */
   videoSource: faceapi.TNetInput,
   videoModelOptions: faceapi.TinyFaceDetectorOptions,
   audioModel: Model | null,
@@ -126,7 +161,10 @@ async function makeMultimodalPrediction(
   return [audioConfidence, videoConfidence];
 }
 
-/** Call the audio model to detect laughter */
+/**
+ * Call the audio model to detect laughter.
+ * Returns the confidence of the model.
+ */
 function makeAudioPrediction(
   audioModel: Model | null,
   { mfcc, energy, zcr, spectralFlatness, spectralCentroid }: AudioFeatures
@@ -137,6 +175,7 @@ function makeAudioPrediction(
 
   return faceapi.tf.tidy(() => {
     // Return early if we're not detecting any audio signal.
+    // Computationally cheap implementation of a VAD.
     const isTalking = energy > 0.5;
     if (!isTalking) {
       return;
@@ -150,7 +189,10 @@ function makeAudioPrediction(
   });
 }
 
-/** Call face-api.js to detect emotions via video */
+/**
+ * Call face-api.js to detect emotions via video.
+ * Returns the confidence of the model.
+ * */
 async function makeVideoPrediction(
   videoSource: faceapi.TNetInput,
   videoModelOptions: faceapi.TinyFaceDetectorOptions
@@ -159,6 +201,7 @@ async function makeVideoPrediction(
     .detectAllFaces(videoSource, videoModelOptions)
     .withFaceExpressions();
 
+  // No faces detected
   if (!detections[0]) {
     return;
   }
