@@ -82,10 +82,9 @@ export default class Lold {
         spectralFlatness,
         spectralCentroid
       }: AudioFeatures) => {
-        const [
-          audioConfidence,
-          videoConfidence
-        ] = await makeMultimodalPrediction(
+        const [audioConfidence, videoConfidence] = await processMakePrediction(
+          // TODO Expose this prediction mode to the users.
+          "multimodal",
           videoSource,
           this.videoModelOptions,
           this.audioModel,
@@ -128,6 +127,56 @@ export default class Lold {
   public getMultimodalPrediction = () => {
     return this.predictions;
   };
+}
+
+type PredictionMode = "audio" | "video" | "multimodal";
+/**
+ * Choose the modality in which to make the prediction.
+ * A wrapper around existing unimodal/multimodal functions.
+ */
+async function processMakePrediction(
+  predictionMode: PredictionMode,
+  videoSource: faceapi.TNetInput,
+  videoModelOptions: faceapi.TinyFaceDetectorOptions,
+  audioModel: Model | null,
+  { mfcc, energy, zcr, spectralFlatness, spectralCentroid }: AudioFeatures
+): Promise<Array<number | undefined>> {
+  switch (predictionMode) {
+    case "audio":
+      // Return [audioConfidence, undefined]
+      return [
+        makeAudioPrediction(audioModel, {
+          mfcc,
+          energy,
+          zcr,
+          spectralFlatness,
+          spectralCentroid
+        }),
+        undefined
+      ];
+
+    case "video":
+      // Return [undefined, videoConfidence]
+      const videoConfidence = await makeVideoPrediction(
+        videoSource,
+        videoModelOptions
+      );
+      return [undefined, videoConfidence];
+
+    case "multimodal":
+      // Return [audioConfidence, videoConfidence]
+      return await makeMultimodalPrediction(
+        videoSource,
+        videoModelOptions,
+        audioModel,
+        { mfcc, energy, zcr, spectralFlatness, spectralCentroid }
+      );
+
+    default:
+      throw new Error(
+        `Specified prediction mode "${predictionMode}" is not supported. Try using either "audio", "video" or "multimodal"`
+      );
+  }
 }
 
 /** Return laughter prediction/confidence using both
