@@ -29,7 +29,7 @@ export default class Lold {
   /** An array that contains the confidence (0 to 1) of the prediction
    * being laugh (audio model) or happy (laugh-api.js)
    */
-  private predictions: Array<number | null> = [];
+  private predictions: Array<number | undefined> = [];
 
   constructor(videoSource: faceapi.TNetInput, audioStream: MediaStream) {
     this.source = this.audioContext.createMediaStreamSource(audioStream);
@@ -109,16 +109,33 @@ async function makeMultimodalPrediction(
   videoModelOptions: faceapi.TinyFaceDetectorOptions,
   audioModel: Model | null,
   { mfcc, energy, zcr, spectralFlatness, spectralCentroid }: AudioFeatures
-): Promise<Array<number | null>> {
+): Promise<Array<number | undefined>> {
+  const audioConfidence = makeAudioPrediction(audioModel, {
+    mfcc,
+    energy,
+    zcr,
+    spectralFlatness,
+    spectralCentroid
+  });
+
+  const videoConfidence = await makeVideoPrediction(
+    videoSource,
+    videoModelOptions
+  );
+
+  return [audioConfidence, videoConfidence];
+}
+
+/** Call the audio model to detect laughter */
+function makeAudioPrediction(
+  audioModel: Model | null,
+  { mfcc, energy, zcr, spectralFlatness, spectralCentroid }: AudioFeatures
+) {
   if (!audioModel) {
     throw new Error("Audio model not found.");
   }
 
-  let audioConfidence: number | null = null;
-  let videoConfidence: number | null = null;
-
-  // Call audio model to detect laughter via audio
-  faceapi.tf.tidy(() => {
+  return faceapi.tf.tidy(() => {
     // Return early if we're not detecting any audio signal.
     const isTalking = energy > 0.5;
     if (!isTalking) {
@@ -129,19 +146,27 @@ async function makeMultimodalPrediction(
     const mfccTensor = faceapi.tf.tensor(features, [1, NUM_FEATURES]);
     const prediction = audioModel.predict(mfccTensor) as faceapi.tf.Tensor;
     const [laugh, speech, silence] = prediction.dataSync();
-    audioConfidence = laugh;
+    return laugh;
   });
+}
 
-  // Call face-api.js to detect the emotion via video
+/** Call face-api.js to detect emotions via video */
+async function makeVideoPrediction(
+  videoSource: faceapi.TNetInput,
+  videoModelOptions: faceapi.TinyFaceDetectorOptions
+) {
   const detections = await faceapi
     .detectAllFaces(videoSource, videoModelOptions)
     .withFaceExpressions();
-  if (detections[0]) {
-    const {
-      expressions: { happy }
-    } = detections[0];
-    videoConfidence = happy;
+
+  if (!detections[0]) {
+    return;
   }
 
-  return [audioConfidence, videoConfidence];
+  const {
+    // The emotion "Happiness" can be associated with
+    // laughter, thus we take it into consideration
+    expressions: { happy }
+  } = detections[0];
+  return happy;
 }
