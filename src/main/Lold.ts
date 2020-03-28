@@ -28,6 +28,7 @@ type AudioFeatures = {
 // Extra configuration applied to each Lold.js instance
 type LoldOptions = {
   predictionMode: PredictionMode;
+  videoSourceType: "webcam" | "video";
 };
 
 /**
@@ -43,7 +44,8 @@ type LoldOptions = {
  * @constructor
  * @param videoSource Source of the video signal. Usually an HTMLVideoElement
  * @param audioStream A stream of media content. E.g. audio stream from webcam
- * @param predictionMode Whether to detect laughter using only audio, video or both (multimodal)
+ * @param predictionMode Whether to detect laughter using only audio, video or both (multimodal). Default multimodal.
+ * @param videoSourceType What kind of video signal is fed to the model. Default webcam.
  *
  * @public `loadModels` - Loads weights and models needed to give predictions
  * @public `startMultimodalPrediction` - Start the Meyda analyser
@@ -57,7 +59,7 @@ export default class Lold {
   private analyser: any;
   private audioContext = new AudioContext();
   private audioModel: Model | null = null;
-  private source: MediaStreamAudioSourceNode;
+  private source: MediaStreamAudioSourceNode | MediaElementAudioSourceNode;
   private videoModelOptions = new faceapi.TinyFaceDetectorOptions();
   /** An array that contains the confidence (0 to 1) of the prediction
    * being laugh (audio model) or happy (laugh-api.js)
@@ -65,13 +67,16 @@ export default class Lold {
   private predictions: Array<number | undefined> = [];
 
   constructor(
-    videoSource: faceapi.TNetInput,
+    videoSource: HTMLVideoElement,
     audioStream: MediaStream,
-    { predictionMode = "multimodal" }: LoldOptions
+    { predictionMode = "multimodal", videoSourceType = "webcam" }: LoldOptions
   ) {
     // Important that we create the media stream source here, to make sure
     // that it refers to the right audioContext box
-    this.source = this.audioContext.createMediaStreamSource(audioStream);
+    this.source =
+      videoSourceType === "webcam"
+        ? this.audioContext.createMediaStreamSource(audioStream)
+        : this.audioContext.createMediaElementSource(videoSource);
 
     this.analyser = Meyda.createMeydaAnalyzer({
       audioContext: this.audioContext,
