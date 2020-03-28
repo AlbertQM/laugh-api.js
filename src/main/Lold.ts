@@ -25,6 +25,11 @@ type AudioFeatures = {
   energy: number;
 };
 
+// Extra configuration applied to each Lold.js instance
+type LoldOptions = {
+  predictionMode: PredictionMode;
+};
+
 /**
  * @class Main Lold API
  * @classdesc
@@ -38,6 +43,7 @@ type AudioFeatures = {
  * @constructor
  * @param videoSource Source of the video signal. Usually an HTMLVideoElement
  * @param audioStream A stream of media content. E.g. audio stream from webcam
+ * @param predictionMode Whether to detect laughter using only audio, video or both (multimodal)
  *
  * @public `loadModels` - Loads weights and models needed to give predictions
  * @public `startMultimodalPrediction` - Start the Meyda analyser
@@ -61,7 +67,7 @@ export default class Lold {
   constructor(
     videoSource: faceapi.TNetInput,
     audioStream: MediaStream,
-    predictionMode: PredictionMode = "multimodal"
+    { predictionMode = "multimodal" }: LoldOptions
   ) {
     // Important that we create the media stream source here, to make sure
     // that it refers to the right audioContext box
