@@ -1,17 +1,16 @@
-import * as faceapi from "face-api.js";
-// @ts-ignore as `Meyda` doesn't have type defs
-import * as Meyda from "meyda";
-import { LayersModel, loadLayersModel } from "@tensorflow/tfjs";
+import Lold from "./Lold";
 
-const MODELS_PATH = "./models";
 // How long should the "You laughed!" caption stay on screen after a detection.
 const DETECTION_CAPTION_SCREEN_TIME_MS = 1000;
+// How often to get predictions from API
+const DETECTION_RATE_MS = 100;
+
 const pageName = window.location.pathname.split("/").pop();
 const isOfflineVideoVersion = pageName === "video.html";
-const isMobileVersion = pageName === "mobile.html";
 
 // Media Element containing the A/V feed
 const videoEl = document.getElementById("video") as HTMLVideoElement;
+// On screen indicators of confidence.
 const predictionEl = document.getElementById("prediction");
 const audioConfidenceEl = document.getElementById(
   "confidenceAudio"
@@ -19,180 +18,63 @@ const audioConfidenceEl = document.getElementById(
 const videoConfidenceEl = document.getElementById(
   "confidenceVideo"
 ) as HTMLProgressElement;
-const initialMessage = document.getElementById(
-  "initialMessage"
-) as HTMLHeadingElement;
 
-// Audio setup
-const audioContext = new AudioContext();
-let source: // When using audio from live webcam feed
-| MediaStreamAudioSourceNode
-  // When using audio from offline video
-  | MediaElementAudioSourceNode
-  | null = null;
-// Laugh-audio model
-type Model = LayersModel;
-let model: Model | null = null;
+// Live webcam feed
+let audioStream: MediaStream | null = null;
 
-const tinyFaceDetector = new faceapi.TinyFaceDetectorOptions();
-
-// Features extracted with Meyda and fed to the model
-type AudioFeatures = {
-  zcr: number[];
-  spectralCentroid: number[];
-  spectralFlatness: number[];
-  mfcc: number[];
-  energy: number;
-};
-/** Takes AudioFeatures as input and predicts laughter using both
- *  audio and video model.
- */
-function makePrediction({
-  mfcc,
-  energy,
-  zcr,
-  spectralFlatness,
-  spectralCentroid
-}: AudioFeatures) {
-  faceapi.tf.tidy(() => {
-    if (isMobileVersion && energy < 0.5) {
-      return;
+navigator.mediaDevices
+  .getUserMedia({ video: {}, audio: {} })
+  .then(stream => {
+    if (!isOfflineVideoVersion) {
+      videoEl.srcObject = stream;
     }
-
-    faceapi
-      .detectAllFaces(videoEl, tinyFaceDetector)
-      .withFaceExpressions()
-      .then((detections): any => {
-        if (!detections[0]) {
-          return;
-        }
-        const {
-          expressions: { happy }
-        } = detections[0];
-        const features = mfcc
-          .concat(zcr)
-          .concat(spectralFlatness)
-          .concat(spectralCentroid);
-        const mfccTensor = faceapi.tf.tensor(features, [1, 43]);
-        const prediction = model!.predict(mfccTensor) as faceapi.tf.Tensor;
-        const [laugh, speech, silence] = prediction.dataSync();
-        const isLaughingAudio = laugh > 0.65;
-        const isLaughingVideo = happy > 0.65;
-
-        // Update the progress bars on screen based on how confident
-        // the models are
-        audioConfidenceEl!.value = Number(laugh.toFixed(3)) * 100;
-        videoConfidenceEl!.value = Number(happy.toFixed(3)) * 100;
-
-        // Remove the "Loading.." message as we're ready to show predictions
-        initialMessage.remove();
-
-        // If we are not detecting sound, there is no chance of
-        // laugh. This check could be done before the prediction to
-        // save computation. However, we want to show the "video confidence"
-        // update in real-time. This might change in the future.
-        // TODO: Move this check as early as possible to save computation
-        // once we don't need to show the video confidence on screen anymore.
-        const isTalking = energy > 0.5;
-        if (!isTalking) {
-          return;
-        }
-
-        if (isLaughingAudio && isLaughingVideo) {
-          predictionEl!.innerHTML = "You laughed!";
-          // Persist the results in the UI for a few seconds, then
-          // clear it.
-          setTimeout(() => {
-            predictionEl!.innerHTML = "";
-            audioConfidenceEl!.value = 0;
-            videoConfidenceEl!.value = 0;
-          }, DETECTION_CAPTION_SCREEN_TIME_MS);
-        }
-      });
-  });
-}
-
-function startPredicting() {
-  const isAudioReady =
-    audioContext.state === "running" && typeof Meyda !== "undefined";
-  const isVideoReady = !!videoEl;
-
-  const computePreduction = () => {
-    const analyzer = Meyda.createMeydaAnalyzer({
-      audioContext: audioContext,
-      source,
-      bufferSize: 4096,
-      numberOfMFCCCoefficients: 40,
-      featureExtractors: [
-        "mfcc",
-        "energy",
-        "zcr",
-        "spectralCentroid",
-        "spectralFlatness"
-      ],
-      callback: ({
-        mfcc,
-        energy,
-        zcr,
-        spectralFlatness,
-        spectralCentroid
-      }: AudioFeatures) =>
-        makePrediction({
-          mfcc,
-          energy,
-          zcr,
-          spectralFlatness,
-          spectralCentroid
-        })
+    audioStream = stream;
+    return new Promise(resolve => (videoEl.onplay = resolve));
+  })
+  .then(async _loadEvent => {
+    // Create an instance of Lold.js!
+    const lold = new Lold(videoEl, audioStream!, {
+      predictionMode: "multimodal",
+      videoSourceType: isOfflineVideoVersion ? "video" : "webcam"
     });
-    analyzer.start();
-    videoEl.removeEventListener("play", computePreduction);
-  };
 
-  if (isAudioReady && isVideoReady) {
-    videoEl.addEventListener("play", computePreduction);
-  }
-}
+    // Load all models and required (from face-api.js and lold.js audio model)
+    await lold.loadModels();
 
-function handleBeginInteraction() {
-  if (audioContext.state !== "running") {
-    audioContext.resume();
-  }
-  initialMessage.innerHTML = "Loading models..";
-  Promise.all([
-    faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_PATH),
-    faceapi.nets.faceExpressionNet.loadFromUri(MODELS_PATH)
-  ]).then(startAV);
-}
-// Chrome 70 or above requires users gestures to enable WebAudio API.
-// We need to resume the audio context after users made an action.
-window.addEventListener("pointerdown", handleBeginInteraction);
+    // Start predicting. Predictions run in the background and can be
+    // accessed with getters (e.g. getMultimodalPrediction)
+    lold.startMultimodalPrediction();
 
-const loadAudioModel = async () => {
-  model = await loadLayersModel("./models/model.json");
-};
+    // Get predictions at a set interval.
+    setInterval(() => {
+      let [audioConfidence, videoConfidence] = lold.getMultimodalPrediction();
+      console.log(audioConfidence, videoConfidence);
 
-function startAV() {
-  window.removeEventListener("pointerdown", handleBeginInteraction);
-
-  const isAVReady = videoEl && audioContext.state === "running";
-  if (!isAVReady) {
-    return;
-  }
-  loadAudioModel();
-
-  startPredicting();
-
-  navigator.getUserMedia(
-    { video: {}, audio: {} },
-    stream => {
-      if (!isOfflineVideoVersion) {
-        videoEl.srcObject = stream;
+      // If any prediction is null, set it to 0 so
+      // it can be safely handled by the code below.
+      if (!audioConfidence) {
+        audioConfidence = 0;
       }
-      source = !isOfflineVideoVersion
-        ? audioContext.createMediaStreamSource(stream)
-        : audioContext.createMediaElementSource(videoEl);
-    },
-    err => console.error(err)
-  );
-}
+      if (!videoConfidence) {
+        videoConfidence = 0;
+      }
+
+      audioConfidenceEl!.value = Number(audioConfidence.toFixed(3)) * 100;
+      videoConfidenceEl!.value = Number(videoConfidence.toFixed(3)) * 100;
+
+      const isLaughingAudio = audioConfidence > 0.65;
+      const isLaughingVideo = videoConfidence > 0.65;
+
+      if (isLaughingAudio && isLaughingVideo) {
+        predictionEl!.innerHTML = "You laughed!";
+        // Persist the results in the UI for a few seconds, then
+        // clear it.
+        setTimeout(() => {
+          predictionEl!.innerHTML = "";
+          audioConfidenceEl!.value = 0;
+          videoConfidenceEl!.value = 0;
+        }, DETECTION_CAPTION_SCREEN_TIME_MS);
+      }
+    }, DETECTION_RATE_MS);
+  })
+  .catch(err => console.error(err));
