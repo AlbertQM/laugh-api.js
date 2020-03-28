@@ -58,7 +58,11 @@ export default class Lold {
    */
   private predictions: Array<number | undefined> = [];
 
-  constructor(videoSource: faceapi.TNetInput, audioStream: MediaStream) {
+  constructor(
+    videoSource: faceapi.TNetInput,
+    audioStream: MediaStream,
+    predictionMode: PredictionMode = "multimodal"
+  ) {
     // Important that we create the media stream source here, to make sure
     // that it refers to the right audioContext box
     this.source = this.audioContext.createMediaStreamSource(audioStream);
@@ -83,8 +87,7 @@ export default class Lold {
         spectralCentroid
       }: AudioFeatures) => {
         const [audioConfidence, videoConfidence] = await processMakePrediction(
-          // TODO Expose this prediction mode to the users.
-          "multimodal",
+          predictionMode,
           videoSource,
           this.videoModelOptions,
           this.audioModel,
