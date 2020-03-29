@@ -29,6 +29,11 @@ module.exports = {
         flatten: true
       },
       {
+        from: "./src/static/**/*.css",
+        to: path.resolve(__dirname, "dist"),
+        flatten: true
+      },
+      {
         from: "./src/static/**/*.mp4",
         to: path.resolve(__dirname, "dist/videos"),
         flatten: true
