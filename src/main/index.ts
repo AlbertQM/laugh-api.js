@@ -1,4 +1,5 @@
-import Lold from "./Lold";
+// @ts-ignore
+import Lold from "lold.js";
 
 // How long should the "You laughed!" caption stay on screen after a detection.
 const DETECTION_CAPTION_SCREEN_TIME_MS = 1000;
