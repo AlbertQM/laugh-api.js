@@ -1,7 +1,7 @@
 {
-  "name": "laugh-api",
-  "version": "1.0.0",
-  "description": "A high-level API to detect laughter from audio-visual data. It uses face-api.js for video features, and a custom model for audio features. Built in TensorFlow.js.",
+  "name": "lold.js",
+  "version": "1.1.0",
+  "description": "A high-level API to detect laughter from audio-visual data. It uses face-api.js for video features, and a custom model for audio features.",
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
