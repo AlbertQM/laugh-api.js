@@ -88,14 +88,14 @@ export default class Lold {
         "energy",
         "zcr",
         "spectralCentroid",
-        "spectralFlatness"
+        "spectralFlatness",
       ],
       callback: async ({
         mfcc,
         energy,
         zcr,
         spectralFlatness,
-        spectralCentroid
+        spectralCentroid,
       }: AudioFeatures) => {
         const [audioConfidence, videoConfidence] = await processMakePrediction(
           predictionMode,
@@ -107,11 +107,11 @@ export default class Lold {
             energy,
             zcr,
             spectralFlatness,
-            spectralCentroid
+            spectralCentroid,
           }
         );
         this.predictions = [audioConfidence, videoConfidence];
-      }
+      },
     });
   }
 
@@ -121,7 +121,7 @@ export default class Lold {
     // Load face-api.js models
     Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_PATH),
-      faceapi.nets.faceExpressionNet.loadFromUri(MODELS_PATH)
+      faceapi.nets.faceExpressionNet.loadFromUri(MODELS_PATH),
     ]);
   };
 
@@ -164,9 +164,9 @@ async function processMakePrediction(
           energy,
           zcr,
           spectralFlatness,
-          spectralCentroid
+          spectralCentroid,
         }),
-        undefined
+        undefined,
       ];
 
     case "video":
@@ -213,7 +213,7 @@ async function makeMultimodalPrediction(
     energy,
     zcr,
     spectralFlatness,
-    spectralCentroid
+    spectralCentroid,
   });
 
   const videoConfidence = await makeVideoPrediction(
@@ -272,7 +272,7 @@ async function makeVideoPrediction(
   const {
     // The emotion "Happiness" can be associated with
     // laughter, thus we take it into consideration
-    expressions: { happy }
+    expressions: { happy },
   } = detections[0];
   return happy;
 }

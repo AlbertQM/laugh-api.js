@@ -24,18 +24,18 @@ let audioStream: MediaStream | null = null;
 
 navigator.mediaDevices
   .getUserMedia({ video: {}, audio: {} })
-  .then(stream => {
+  .then((stream) => {
     if (!isOfflineVideoVersion) {
       videoEl.srcObject = stream;
     }
     audioStream = stream;
-    return new Promise(resolve => (videoEl.onplay = resolve));
+    return new Promise((resolve) => (videoEl.onplay = resolve));
   })
-  .then(async _loadEvent => {
+  .then(async (_loadEvent) => {
     // Create an instance of Lold.js!
     const lold = new Lold(videoEl, audioStream!, {
       predictionMode: "multimodal",
-      videoSourceType: isOfflineVideoVersion ? "video" : "webcam"
+      videoSourceType: isOfflineVideoVersion ? "video" : "webcam",
     });
 
     // Load all models and required (from face-api.js and lold.js audio model)
@@ -77,4 +77,4 @@ navigator.mediaDevices
       }
     }, DETECTION_RATE_MS);
   })
-  .catch(err => console.error(err));
+  .catch((err) => console.error(err));
