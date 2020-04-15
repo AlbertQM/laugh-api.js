@@ -276,5 +276,3 @@ async function makeVideoPrediction(
   } = detections[0];
   return happy;
 }
-
-module.exports = Lold;
