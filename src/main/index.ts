@@ -48,7 +48,6 @@ navigator.mediaDevices
     // Get predictions at a set interval.
     setInterval(() => {
       let [audioConfidence, videoConfidence] = lold.getMultimodalPrediction();
-      console.log(audioConfidence, videoConfidence);
 
       // If any prediction is null, set it to 0 so
       // it can be safely handled by the code below.
