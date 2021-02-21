@@ -9,3 +9,6 @@ src/static/*.js.map
 src/main/*
 !src/main/index.ts
 !src/main/Lold.ts
+
+src/static/data
+src/static/*.mp4
