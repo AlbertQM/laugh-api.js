@@ -34,21 +34,22 @@ navigator.mediaDevices
   .then(async (_loadEvent) => {
     // Create an instance of Lold.js!
     const lold = new Lold(videoEl, audioStream!, {
-      predictionMode: "multimodal",
+      predictionMode: "audio",
       videoSourceType: isOfflineVideoVersion ? "video" : "webcam",
     });
 
+    console.log("About to load models...");
     // Load all models and required (from face-api.js and lold.js audio model)
     await lold.loadModels();
-
+    console.log("Models loaded.");
     // Start predicting. Predictions run in the background and can be
     // accessed with getters (e.g. getMultimodalPrediction)
     lold.startMultimodalPrediction();
+    console.log("Started prediction.");
 
     // Get predictions at a set interval.
     setInterval(() => {
       let [audioConfidence, videoConfidence] = lold.getMultimodalPrediction();
-
       // If any prediction is null, set it to 0 so
       // it can be safely handled by the code below.
       if (!audioConfidence) {
