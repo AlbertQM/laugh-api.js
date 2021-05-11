@@ -1,16 +1,8 @@
 # LOLd.js - Multimodal Lightweight Online Laughter Detection
 
-```
-* * * * * * * * * * * * * * * * * * * * * * * * *
-* Final Year Project (2019/2020)                *
-* BSc(Eng) "Creative Computing"                 *
-* Queen Mary University of London               *
-*                                               *
-* @Authors Alberto Morabito                     *
-* * * * * * * * * * * * * * * * * * * * * * * * *
-```
-
 JavaScript (TS) API for laughter recognition with audiovisual data, built using Tensorflow.js <br>
+
+The [full report](Alberto_Morabito-Report.pdf) is available as part of this repo.
 
 The multimodal recognition uses two different models:
 
@@ -26,3 +18,13 @@ The multimodal recognition uses two different models:
 2. we need to serve the files: <br>
    `npm start` <br>
    This will have `webpack-dev-server` serve the files on `localhost:8080`
+
+```
+* * * * * * * * * * * * * * * * * * * * * * * * *
+* Final Year Project (2019/2020)                *
+* BSc(Eng) "Creative Computing"                 *
+* Queen Mary University of London               *
+*                                               *
+* @Authors Alberto Morabito                     *
+* * * * * * * * * * * * * * * * * * * * * * * * *
+```
